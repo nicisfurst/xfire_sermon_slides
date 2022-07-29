@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 from json import load
 import os
+from sys import stderr
 
 
 # Const
@@ -35,7 +36,8 @@ def main():
             make_text_slide(curr['settings'],  curr['fields'], df, i, bg, 
                             setup_data, df[data['meta_fields']['title']])
         elif curr['type'] == IMAGE_TYPE:
-            raise(NotImplementedError('can\t yet make images'))
+            print(f"\nWARNING: Images are not yet implemented. Will need to be added manually. Skipping slide {i+FIRST_SLIDE_N}.\nURL:{df[curr['fields'][0] + f'.{i}' if i != 0 else None]}", file=stderr)
+            # raise(NotImplementedError('can\t yet make images'))
             # make_image_slide(curr['settings'],  curr['fields'], df, i, bg)
         else:
             print(f'Can\'t find {curr["type"]} in the template\'s type')
