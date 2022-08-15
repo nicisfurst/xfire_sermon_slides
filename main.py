@@ -36,7 +36,7 @@ def main():
             make_text_slide(curr['settings'],  curr['fields'], df, i, bg, 
                             setup_data, df[data['meta_fields']['title']])
         elif curr['type'] == IMAGE_TYPE:
-            print(f"\nWARNING: Images are not yet implemented. Will need to be added manually. Skipping slide {i+FIRST_SLIDE_N}.\nURL:{df[curr['fields'][0] + f'.{i}' if i != 0 else None]}", file=stderr)
+            print(f"\nWARNING: Images are not yet implemented. Will need to be added manually. Skipping slide {i+FIRST_SLIDE_N}.\nURL:{df[curr['fields'][0] + f'.{i}' if i != 0 else None]}")
             # raise(NotImplementedError('can\t yet make images'))
             # make_image_slide(curr['settings'],  curr['fields'], df, i, bg)
         else:
