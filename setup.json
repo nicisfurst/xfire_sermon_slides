@@ -1,89 +1,11 @@
 {
-    "setup": {
-        "width": 1920,
-        "height": 1080,
-        "form": "Wisdom In Real Life Sermon Slides.csv",
-        "bg": "wirl.jpg",
-        "text_color": "#d7eab9",
-        "footer_font": "MontserratAlternates-Black.otf",
-        "footer_size": 30,
-        "footer_height_pos": 0.93
-    },
-    "meta_fields": {
-        "name": "Enter Your Name",
-        "title": "Enter Your Sermon Title"
-    },
-    "template_fields": {
-        "slide_type": "Slide Template",
-        "slide_options": [
-            "Main Point",
-            "Main Point Overview", 
-            "Bible Verse",
-            "Image"
-        ]
-    },
-    "templates": {
-        "Main Point Overview": {
-            "type": "text",
-            "settings": {
-                "font": "TAN-BUSTER.otf",
-                "size": 60,
-                "char_wrap": 35,
-                "spacing": 60,
-                "force_upper": true,
-                "align": "left",
-                "anchor": "lm",
-                "last_field_footer": false
-            },
-            "fields": [
-                "Main Point #1",
-                "Main Point #2",
-                "Main Point #3",
-                "Main Point #4",
-                "Main Point #5"
-            ]
-        },
-        "Main Point": {
-            "type": "text",
-            "settings": {
-                "font": "TAN-BUSTER.otf",
-                "size": 80,
-                "char_wrap": 22,
-                "spacing": 40,
-                "force_upper": true,
-                "align": "center",
-                "anchor": "mm",
-                "last_field_footer": false
-            },
-            "fields": [
-                "Main Point"    
-            ]
-        },
-        "Bible Verse": {
-            "type": "text",
-            "settings": {
-                "font": "MontserratAlternates-Black.otf",
-                "size": 50,
-                "char_wrap": 45,
-                "spacing": 15,
-                "force_upper": false,
-                "align": "center",
-                "anchor": "mm",
-                "last_field_footer": true
-            },
-            "fields": [
-                "What is the Bible Verse?",
-                "Where Is It From? (eg. Matthew 1:1)"
-            ]
-        },
-        "Image": {
-            "type": "image",
-            "settings": {
-                "fill_screen": true
-            },
-            "fields": [
-                "Upload Image"
-            ]
-        }
-    }
+  "width": 1920,
+  "height": 1080,
+  "form": "Wisdom In Real Life Sermon Slides.csv",
+  "bg": "wirl.jpg",
+  "meta_fields": {
+    "name": "Enter Your Name",
+    "title": "Enter Your Sermon Title",
+    "slide_type": "Slide Template"
+  }
 }

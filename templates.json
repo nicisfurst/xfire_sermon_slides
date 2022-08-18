@@ -1,0 +1,112 @@
+{
+  "Main Point Overview": [
+    {
+      "type": "empty",
+      "width": 1,
+      "height": 0.125
+    },
+    {
+      "type": "text",
+      "width": 0.8,
+      "height": 0.75,
+      "size": 60,
+      "spacing": 20,
+      "font": "TAN-BUSTER.otf",
+      "color": "#d7eab9",
+      "align": "left",
+      "anchor": "lm",
+      "force_upper": true,
+      "fields": [
+        "Main Point #1",
+        "Main Point #2",
+        "Main Point #3",
+        "Main Point #4",
+        "Main Point #5"
+      ]
+    },
+    {
+      "type": "title_text",
+      "width": 1,
+      "height": 0.125,
+      "size": 30,
+      "spacing": 40,
+      "font": "MontserratAlternates-Black.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": false
+    }
+  ],
+  "Main Point": [
+    {
+      "type": "empty",
+      "width": 1,
+      "height": 0.125
+    },
+    {
+      "type": "text",
+      "width": 0.8,
+      "height": 0.75,
+      "size": 80,
+      "spacing": 40,
+      "font": "TAN-BUSTER.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": true,
+      "fields": ["Main Point"]
+    },
+    {
+      "type": "title_text",
+      "width": 1,
+      "height": 0.125,
+      "size": 30,
+      "spacing": 40,
+      "font": "MontserratAlternates-Black.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": false
+    }
+  ],
+  "Bible Verse": [
+    {
+      "type": "empty",
+      "width": 1,
+      "height": 0.125
+    },
+    {
+      "type": "text",
+      "width": 0.8,
+      "height": 0.75,
+      "size": 50,
+      "spacing": 30,
+      "font": "MontserratAlternates-Black.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": false,
+      "fields": ["What is the Bible Verse?"]
+    },
+    {
+      "type": "text",
+      "width": 1,
+      "height": 0.125,
+      "size": 30,
+      "spacing": 15,
+      "font": "MontserratAlternates-Black.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": false,
+      "fields": ["Where Is It From? (eg. Matthew 1:1)"]
+    }
+  ],
+  "Image": [
+    {
+      "type": "empty",
+      "width": 1,
+      "height": 0.125
+    }
+  ]
+}
