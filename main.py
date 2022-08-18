@@ -1,55 +1,81 @@
+# SERMON SLIDE GENERATOR
+# Written by Nic Furst
+#
+# Tool to automatically generate sermon slides
+#
+# Usage:
+# A google form is used, and its csv is downloaded into the root directory.
+# The program then reads the csv and the user chooses which input they want to
+# use to generate sermon slides. The program will then interpret the fields
+# via the templates.json file. The slides will be generated and output into 
+# the slides directory
+
+
 # Imports
-from copy import deepcopy
 from tqdm import tqdm
 import pandas as pd
-import os
 from json import load
-from sys import argv
+import os
+import argparse
+import logging
+from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
+# Local Imports
+from constants import *
 import slide_creation
 
-
-# Const
-SETUP_DATA = 'setup.json'
-FONT_DIR = 'fonts/'
-BG_DIR = 'backgrounds/'
-SLIDE_DIR = 'slides/'
+# Other Constants
 DEBUG = True
 DEBUG_I = False
 
+# Initialise Logging
+logging.basicConfig(level=logging.WARNING, format=LOGGING_FORMATTER, 
+                    filename=f'logs', filemode='a')
+logger = logging.getLogger(__name__)
 
+
+###################
+# Main Operations #
+###################
+
+# Main Function
 def main():
-    rm_old_slides()
+    # Get Setup Data
     setup = get_setup()
-    data = get_slide_data(setup['form'], setup['meta_fields'])
-    slides = get_slides(setup, data)
-    make_slides(slides)
-
-
-def rm_old_slides():
-    for old_slide in os.listdir(SLIDE_DIR):
-        if old_slide.endswith('.png'):
-            os.remove(f'{SLIDE_DIR}/{old_slide}')
-
-
-def get_setup() -> dict:
-    with open(SETUP_DATA, 'r') as f:
-        data = load(f)
-    return data
-
-
-def get_slide_data(form: str, meta_fields: dict) -> pd.DataFrame:
-    df_all = pd.read_csv(form)
+    df    = get_form_data(setup['form'])
     
-    if not DEBUG_I:
-        print("Please Chose an Index (eg 0, 1)")
-        print(df_all.loc[:, [meta_fields['name'], meta_fields['title']]])
-        index = input('> ')
-        assert(index.isnumeric())
+    # Main Loop
+    while True:
+        sermon_data = get_sermon_data(df, setup['meta_fields'])
+        if sermon_data is None:
+            break
+        
+        slides = get_slides(setup, sermon_data)
+        make_slides(slides)
+        print('Done!')
+        
+        if isinstance(args.index, int):
+            break
+        
+    input('Press Enter to Exit!')
+
+
+# Gets the pandas series with the data for a given sermon
+def get_sermon_data(df: pd.DataFrame, meta_fields: dict) -> pd.Series:
+    # Series specified in the cmd arguments
+    if isinstance(args.index, int):
+        index = args.index
+        
+    # Ask user for sermon
     else:
-        index = DEBUG_I
-    
-    return df_all.loc[int(index)]
+        print("Please Chose an Index (eg 0, 1) OR Press Enter to Exit.")
+        print(df.loc[:, [meta_fields['name'], meta_fields['title']]])
+        index = input('> ')
+        if index == '':
+            return None
+        assert(index.isnumeric())
+        
+    return df.loc[int(index)]
 
 
 def get_slides(setup: dict, data: pd.DataFrame) -> list:
@@ -81,11 +107,56 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
     
     return slides
 
-
 def make_slides(slides: list[slide_creation.Slide]):
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
         slide.save(f'{SLIDE_DIR}/{i}.png')
 
 
+###################
+# Setup Functions #
+###################
+
+# Removes the existing slides in the slides directory
+def cleanup_slides():
+    for old_slide in os.listdir(SLIDE_DIR):
+        if old_slide.endswith('.png'):
+            os.remove(f'{SLIDE_DIR}/{old_slide}')
+
+# Gets setup json dict. Returns 
+def get_setup() -> dict:
+    with open(SETUP_DATA, 'r') as f:
+        data = load(f)
+    return data
+
+# Gets the form data as a Pandas DataFrame
+def get_form_data(form: str) -> pd.DataFrame:
+    df = pd.read_csv(form)
+    return df.reindex(index=df.index[::-1]).reset_index()
+
+
+####################
+# Start Of Program #
+####################
+
 if __name__ == '__main__':
+    # Enable command line functionality
+    parser = argparse.ArgumentParser(description='Automatically Generate Sermon Slides')
+    parser.add_argument('-i', '--index', type=int,
+                        help='Index of the sermon series you want to create. Use 0 for most recent.')
+    parser.add_argument('-o', '--outlines', action='store_true',
+                        help='Adds rectangle outlines around your slide\'s sections.')    
+    args = parser.parse_args()
+    
+    # Set up the program and make sure everything is ready
+    if not os.path.exists(BG_DIR):
+        logger.log(DEBUG, f'Directory: {BG_DIR} doesn\'t exist, creating')
+        os.mkdir(BG_DIR)
+    if not os.path.exists(FONT_DIR):
+        logger.log(DEBUG, f'Directory: {FONT_DIR} doesn\'t exist, creating')
+        os.mkdir(FONT_DIR)
+    if not os.path.exists(SLIDE_DIR):
+        logger.log(DEBUG, f'Directory: {SLIDE_DIR} doesn\'t exist, creating')
+        os.mkdir(SLIDE_DIR)
+
+    # Run the Main Program
     main()

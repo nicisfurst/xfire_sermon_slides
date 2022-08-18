@@ -2,4 +2,3 @@ __pycache__/
 *.csv
 *.jpg
 slides/*
-!slides/.gitkeep
