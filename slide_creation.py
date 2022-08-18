@@ -1,11 +1,8 @@
 ## Imports
-from dataclasses import field
 from textwrap import fill
-from unittest.mock import DEFAULT
 from PIL import Image, ImageDraw, ImageFont
 from json import load
 import pandas as pd
-from string import ascii_letters, ascii_lowercase
 from math import ceil, floor
 
 
@@ -26,28 +23,6 @@ MIN_SPACING = 6
 ################
 ## SECTIONS ####
 ################
-"""
-section
-- size 
-- pos
-- item/block
-
-text block
-- text
-- - upper
-- - char wrap
-- font
-- color
-- align
-- anchor
-- spacing
-- size
-
-image block
-- image
-- scaling / fill options
-- subdivide into multiple imgs
-"""
 
 class Section:
     def __init__(self, width: int, height: int, x: int, y: int) -> None:
@@ -161,18 +136,11 @@ class TextSection(Section):
         finished = False
         
         while not finished:
-            # _, _, w, h = self.font.getmask(self.text).getbbox()
-            # hi, _ = self.font.getmetrics()
-            # sizes = [self.font.getsize(char) for char in ascii_letters]
-            # w = sum(char[0] for char in sizes) / len(ascii_lowercase)
-            # h = sum(char[1] for char in sizes) / len(ascii_lowercase)
             sizes = self.font.getsize(self.text)
             w = sizes[0] / n
             h = sizes[1]
             chars_per_line = ceil(self.width / w)
             n_lines = ceil(n / chars_per_line)
-            # chars_per_line = self.width * n / w
-            # n_lines = n / char_per_line
 
             if (n_lines * h >= self.height):
                 self.adjust_size(self.size - DECREMENT_STEP)
@@ -209,21 +177,6 @@ class TextSection(Section):
 ################
 ## SLIDES ######
 ################
-"""
-slide
-- sections
-- background
-- size 
-
-text slide
-- slide attr
-- main text 
-- footer text
-
-image slide
-- slide attr
-- main image
-"""
 
 class Slide:
     def __init__(self, width: int, height: int, bg: str | Image.Image,
