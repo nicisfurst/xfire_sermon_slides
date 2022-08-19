@@ -216,11 +216,11 @@ class Slide:
         else:
             raise ValueError('Section should be an instance of Section or the type of section you wish to create')
     
-    def save(self, file_path: str):        
+    def save(self, file_path: str, outlines: bool = False):        
         for section in self.sections:
             section.draw(self.draw)
             
-            if self.outline_sections:
+            if outlines:
                 section.draw_outline(self.draw)
             
         self.bg.save(file_path, quality=IMG_QUALITY)
