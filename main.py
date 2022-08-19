@@ -48,10 +48,11 @@ def main():
     while True:
         sermon_data = get_sermon_data(df, setup['meta_fields'])
         if sermon_data is None:
+            logger.log(DEBUG, 'sermon_data is None, breaking main loop')
             break
         
         slides = get_slides(setup, sermon_data)
-        make_slides(slides)
+        make_slides(slides, )
         print('Done!')
         
         if isinstance(args.index, int):
@@ -109,7 +110,7 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
 
 def make_slides(slides: list[slide_creation.Slide]):
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
-        slide.save(f'{SLIDE_DIR}/{i}.png')
+        slide.save(f'{SLIDE_DIR}/{i}.png', outlines=args.outlines)
 
 
 ###################
