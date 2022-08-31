@@ -12,6 +12,7 @@
 
 
 # Imports
+from tkinter import Widget
 from tqdm import tqdm
 import pandas as pd
 from json import load
@@ -27,10 +28,14 @@ import slide_creation
 # Other Constants
 DEBUG = True
 DEBUG_I = False
+TITLE_SLIDE = True
+TITLE_TEMPLATE = 'Title'
 
 # Initialise Logging
-logging.basicConfig(level=logging.WARNING, format=LOGGING_FORMATTER, 
-                    filename=f'logs', filemode='a')
+logging.basicConfig(level=logging.WARNING, 
+                    format=LOGGING_FORMATTER, 
+                    filename=f'logs', 
+                    filemode='a')
 logger = logging.getLogger(__name__)
 
 
@@ -52,10 +57,10 @@ def main():
             break
         
         slides = get_slides(setup, sermon_data)
-        make_slides(slides, )
+        make_slides(setup, sermon_data, slides, title_slide=TITLE_SLIDE)
         print('Done!')
         
-        if isinstance(args.index, int):
+        if isinstance(args.index, int) or not args.multi:
             break
         
     input('Press Enter to Exit!')
@@ -101,15 +106,32 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
     slides = []
     sermon_title = data[setup['meta_fields']['title']]
     for i, slide_type in enumerate(slide_types):
-        new_slide = slide_creation.Slide(setup['width'], setup['height'], 
-                                 setup['bg'], sermon_title, outline_sections=DEBUG)
+        new_slide = slide_creation.Slide(setup['width'], 
+                                         setup['height'], 
+                                         setup['bg'], 
+                                         sermon_title, 
+                                         outline_sections=DEBUG)
         new_slide.read_template(slide_type, data, f'.{i}' if i != 0 else '')
         slides.append(new_slide)
     
     return slides
 
-def make_slides(slides: list[slide_creation.Slide]):
+def make_slides(setup: dict, data: pd.DataFrame,
+                slides: list[slide_creation.Slide], title_slide: bool = True):
+    starting_i = 0
+    
+    if title_slide:
+        starting_i += 1
+        title = data[setup['meta_fields']['title']]
+        title_slide = slide_creation.Slide(setup['width'], 
+                                           setup['height'], 
+                                           setup['bg'], 
+                                           title)
+        title_slide.read_template(TITLE_TEMPLATE, data)
+        title_slide.save(f'{SLIDE_DIR}/{0}.png', outlines=args.outlines)
+    
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
+        i = i + starting_i
         slide.save(f'{SLIDE_DIR}/{i}.png', outlines=args.outlines)
 
 
@@ -145,7 +167,9 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--index', type=int,
                         help='Index of the sermon series you want to create. Use 0 for most recent.')
     parser.add_argument('-o', '--outlines', action='store_true',
-                        help='Adds rectangle outlines around your slide\'s sections.')    
+                        help='Adds rectangle outlines around your slide\'s sections.')
+    parser.add_argument('-m', '--multi', action='store_true',
+                        help='Allows you to run the program multiple time without exiting.')    
     args = parser.parse_args()
     
     # Set up the program and make sure everything is ready
