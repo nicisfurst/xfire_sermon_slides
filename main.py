@@ -12,7 +12,6 @@
 
 
 # Imports
-from tkinter import Widget
 from tqdm import tqdm
 import pandas as pd
 from json import load
