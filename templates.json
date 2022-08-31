@@ -1,4 +1,18 @@
 {
+  "Title": [
+    {
+      "type": "title_text",
+      "width": 1,
+      "height": 1,
+      "size": 90,
+      "spacing": 40,
+      "font": "MontserratAlternates-Black.otf",
+      "color": "#d7eab9",
+      "align": "center",
+      "anchor": "mm",
+      "force_upper": false
+    }
+  ],
   "Main Point Overview": [
     {
       "type": "empty",
