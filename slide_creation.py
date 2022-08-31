@@ -206,7 +206,7 @@ class Slide:
         self.data = None
         self.field_suffix = None
         
-        self.outline_sections = True if kwargs['outline_sections'] else False
+        self.outline_sections = kwargs.get('outline_sections', False)
     
     def add_section(self, section, *args, **kwargs):
         if isinstance(section, Section):
