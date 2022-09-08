@@ -33,7 +33,7 @@ TITLE_TEMPLATE = 'Title'
 # Initialise Logging
 logging.basicConfig(level=logging.WARNING, 
                     format=LOGGING_FORMATTER, 
-                    filename=f'logs', 
+                    filename='logs', 
                     filemode='a')
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,7 @@ def main():
     # Main Loop
     while True:
         sermon_data = get_sermon_data(df, setup['meta_fields'])
+        print(sermon_data)
         if sermon_data is None:
             logger.log(DEBUG, 'sermon_data is None, breaking main loop')
             break

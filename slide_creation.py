@@ -1,19 +1,16 @@
 ## Imports
+import pandas as pd
 from textwrap import fill
 from PIL import Image, ImageDraw, ImageFont
 from json import load
-import pandas as pd
-from math import ceil, floor
+from math import ceil
+from constants import *
 
-
-# Const
+# Other Const
 IMG_QUALITY = 100
-TEMPLATES_FILE = 'templates.json'
 EMPTY_SECTION = 'empty'
 TEXT_SECTION = 'text'
 TITLE_SECTION = 'title_text'
-FONT_DIR = 'fonts'
-BG_DIR = 'backgrounds'
 OUTLINE_COLOR = '#ff0000'
 OUTLINE_WIDTH = 10
 DECREMENT_STEP = 10  # pt
@@ -31,8 +28,8 @@ class Section:
         Args:
             width (pixels): Width of the section
             height (pixels): Height of the section
-            abs_x (pixels): Absolute x position of the section relative to its slide
-            abs_y (pixels): Absolute y position of the section relative to its slide
+            x (pixels): Absolute x position of the section relative to its slide
+            y (pixels): Absolute y position of the section relative to its slide
         """
         self.width:  int = width
         self.height: int = height
@@ -43,10 +40,9 @@ class Section:
         pass
     
     def draw_outline(self, draw: ImageDraw.ImageDraw):
-        draw.rectangle([
-             (self.x, self.y), 
-             (self.x + self.width, self.y + self.height)
-            ], outline=OUTLINE_COLOR, width=OUTLINE_WIDTH)
+        draw.rectangle([(self.x, self.y), 
+                        (self.x + self.width, self.y + self.height)], 
+                       outline=OUTLINE_COLOR, width=OUTLINE_WIDTH)
 
     @staticmethod
     def add_from_template(slide, x: int, y: int, 
