@@ -1,6 +1,8 @@
 ## Imports
 import pandas as pd
 import gdown
+import logging
+from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from textwrap import fill
 from PIL import Image, ImageDraw, ImageFont
 from json import load
@@ -16,6 +18,9 @@ OUTLINE_COLOR = '#ff0000'
 OUTLINE_WIDTH = 10
 DECREMENT_STEP = 10  # pt
 MIN_SPACING = 6
+
+# Logging
+logger = logging.getLogger(__name__)
 
 
 ################

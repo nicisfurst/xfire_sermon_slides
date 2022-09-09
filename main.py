@@ -26,16 +26,14 @@ from constants import *
 import slide_creation
 
 # Other Constants
-DEBUG = True
-DEBUG_I = False
 TITLE_SLIDE = True
 TITLE_TEMPLATE = 'Title'
 
 # Initialise Logging
-logging.basicConfig(level=logging.WARNING, 
+logging.basicConfig(level=INFO, 
                     format=LOGGING_FORMATTER, 
                     filename='logs', 
-                    filemode='a')
+                    filemode='w')
 logger = logging.getLogger(__name__)
 
 
@@ -114,7 +112,7 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
                                          setup['height'], 
                                          setup['bg'], 
                                          sermon_title, 
-                                         outline_sections=DEBUG)
+                                         outline_sections=args.outlines)
         new_slide.read_template(slide_type, data, f'.{i}' if i != 0 else '')
         slides.append(new_slide)
     
@@ -125,6 +123,7 @@ def make_slides(setup: dict, data: pd.DataFrame,
     starting_i = 0
     
     if title_slide:
+        logger.log(DEBUG, 'Making Title Slide')
         starting_i += 1
         title = data[setup['meta_fields']['title']]
         title_slide = slide_creation.Slide(setup['width'], 
@@ -136,6 +135,7 @@ def make_slides(setup: dict, data: pd.DataFrame,
     
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
         i = i + starting_i
+        logger.log(DEBUG, f'Making Slide {i=} {type(slide)=}')
         slide.save(f'{SLIDE_DIR}/{i}.png', i, outlines=args.outlines)
 
 
