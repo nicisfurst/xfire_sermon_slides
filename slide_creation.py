@@ -1,5 +1,6 @@
 ## Imports
 import pandas as pd
+import gdown
 from textwrap import fill
 from PIL import Image, ImageDraw, ImageFont
 from json import load
@@ -36,7 +37,7 @@ class Section:
         self.x:      int = x
         self.y:      int = y
     
-    def draw(self, draw: ImageDraw.ImageDraw):
+    def draw(self, bg: Image.Image, draw: ImageDraw.ImageDraw, n: int):
         pass
     
     def draw_outline(self, draw: ImageDraw.ImageDraw):
@@ -48,7 +49,7 @@ class Section:
     def add_from_template(slide, x: int, y: int, 
                           width: int, height: int, section_template: int
                           ) -> None:
-
+        # TODO: Refactor params to be consistent with elsewhere in the code
         match section_template['type']:
             case 'empty':
                 slide.add_section(Section(width, height, x, y))
@@ -57,18 +58,18 @@ class Section:
                 # Check how many fields have actually been entered in from form
                 n = 0
                 for field in section_template['fields']:
-                    if not null_field(slide.data, slide.field_suffix, field):
+                    if slide.field_exists(field):
                         n += 1
                 assert(n > 0)
                 
                 new_sections = []
                 height = height / n
                 for field in section_template['fields']:
-                    if null_field(slide.data, slide.field_suffix, field):
+                    if not slide.field_exists(field):
                         continue
                     
                     new_sections.append(TextSection(
-                        width, height, x, y, slide.data[field + slide.field_suffix], 
+                        width, height, x, y, slide.get_data(field), 
                         section_template['size'], section_template['force_upper'], 
                         section_template['spacing'], section_template['font'], 
                         section_template['color'], section_template['align'],
@@ -91,6 +92,12 @@ class Section:
                     section_template['spacing'], section_template['font'], 
                     section_template['color'], section_template['align'],
                     section_template['anchor']))
+            
+            case 'image':
+                slide.add_section(ImageSection(
+                    width, height, x, y, 
+                    slide.get_data(section_template['fields'][0]),
+                    section_template['crop']))
             
             case _:
                 raise ValueError(f'Unknown slide section type {section_template["type"]}')
@@ -150,7 +157,7 @@ class TextSection(Section):
         self.size = size
         self.build_font()
     
-    def draw(self, draw: ImageDraw.ImageDraw):
+    def draw(self, bg: Image.Image, draw: ImageDraw.ImageDraw, *args, **kwargs):
         match self.align:
             case 'center':
                 x = self.x + self.width / 2
@@ -168,6 +175,38 @@ class TextSection(Section):
         draw.text((x, y), self.text, fill=self.color, font=self.font,
                   anchor=self.anchor, spacing=self.spacing, 
                   align=self.align)
+
+
+class ImageSection(Section):
+    def __init__(self, width: int, height: int, x: int, y: int,
+                 url: str, crop: bool) -> None:
+        # Call init of super class
+        super().__init__(width, height, x, y)
+        
+        # Add additional properties
+        self.url = url
+        self.crop = crop
+        self.image = None
+        
+        # oth
+        if crop:
+            # TOOD: Add logger 
+            pass
+        
+    def add_image(self, n: int):
+        # Download the image
+        fpath = f'{TMP_DIR}/{n}.png'
+        gdown.download(self.url, fpath, fuzzy=True, quiet=True)   
+        
+        # Load the image
+        self.image = Image.open(fpath)
+    
+    def draw(self, bg: Image.Image, draw: ImageDraw.ImageDraw, n, *args, **kwargs):
+        # Get and Resize the image
+        self.add_image(n)
+        self.image.thumbnail((self.width, self.height), Image.LANCZOS)
+        img_x = (self.width - self.image.width) // 2 + self.x
+        bg.paste(self.image, (img_x, self.y))
 
 
 ################
@@ -204,6 +243,12 @@ class Slide:
         
         self.outline_sections = kwargs.get('outline_sections', False)
     
+    def get_data(self, field: str):
+        return self.data[field + self.field_suffix]
+    
+    def field_exists(self, field: str):
+        return not pd.isnull(self.get_data(field))
+    
     def add_section(self, section, *args, **kwargs):
         if isinstance(section, Section):
             self.sections.append(section)
@@ -212,9 +257,9 @@ class Slide:
         else:
             raise ValueError('Section should be an instance of Section or the type of section you wish to create')
     
-    def save(self, file_path: str, outlines: bool = False):        
+    def save(self, file_path: str, n: int, outlines: bool = False):        
         for section in self.sections:
-            section.draw(self.draw)
+            section.draw(self.bg, self.draw, n)
             
             if outlines:
                 section.draw_outline(self.draw)
@@ -237,12 +282,7 @@ class Slide:
             height = self.height * section['height']
             x_offset = (self.width - width) / 2
             
-            Section.add_from_template(self, x_offset, y_offset,
-                                      width, height, section)
+            Section.add_from_template(self, int(x_offset), int(y_offset),
+                                      int(width), int(height), section)
             
             y_offset += height
-
-
-def null_field(data: dict, field_suffix: str, field: str) -> bool:
-    return pd.isnull(data[field + field_suffix])
-
