@@ -114,6 +114,10 @@
       "anchor": "mm",
       "force_upper": false,
       "fields": ["Where Is It From? (eg. Matthew 1:1)"]
+    },
+    {
+      "type": "lt",
+      "fields": ["What is the Bible Verse?", "Where Is It From? (eg. Matthew 1:1)"]
     }
   ],
   "Image": [

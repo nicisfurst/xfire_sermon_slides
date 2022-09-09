@@ -2,7 +2,7 @@
   "width": 1920,
   "height": 1080,
   "form": "Wisdom In Real Life Sermon Slides (new).csv",
-  "bg": "wirl.jpg",
+  "theme": "wirl",
   "meta_fields": {
     "name": "Enter Your Name",
     "title": "Enter Your Sermon Title",

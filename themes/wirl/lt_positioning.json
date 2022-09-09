@@ -1,0 +1,45 @@
+{
+    "1": [
+        {
+            "width": 1140,
+            "height": 185,
+            "x": 390,
+            "y": 856,
+            "size": 30,
+            "spacing": 15,
+            "font": "MontserratAlternates-Black.otf",
+            "color": "#d7eab9",
+            "align": "center",
+            "anchor": "mm",
+            "force_upper": false
+        }
+    ],
+    "2": [
+        {
+            "width": 1140,
+            "height": 125,
+            "x": 390,
+            "y": 906,
+            "size": 30,
+            "spacing": 10,
+            "font": "MontserratAlternates-Black.otf",
+            "color": "#d7eab9",
+            "align": "center",
+            "anchor": "mm",
+            "force_upper": false
+        },
+        {
+            "width": 327,
+            "height": 88,
+            "x": 227,
+            "y": 807,
+            "size": 30,
+            "spacing": 15,
+            "font": "MontserratAlternates-Black.otf",
+            "color": "#ffffff",
+            "align": "center",
+            "anchor": "mm",
+            "force_upper": false
+        }
+    ]
+}

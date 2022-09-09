@@ -212,6 +212,50 @@ class ImageSection(Section):
         self.image.thumbnail((self.width, self.height), Image.LANCZOS)
         img_x = (self.width - self.image.width) // 2 + self.x
         bg.paste(self.image, (img_x, self.y))
+        
+        
+################
+# LOWER THIRDS #
+################
+
+class LowerThirds():
+    def __init__(self, slide, section_template: dict, all_lt_pos: dict) -> None:
+        # Stuff
+        self.slide = slide
+        self.n_sections = len(section_template['fields'])
+        self.sections = []
+        lt_pos = all_lt_pos[str(self.n_sections)]
+        
+        match self.n_sections:
+            case 1:
+                bg_file = LT1_FILE
+            case 2:
+                bg_file = LT2_FILE
+            case _:
+                raise ValueError('Can only have up to two fields for lower thirds.')
+            
+        self.bg = Image.open(f'{THEME_DIR}/{slide.theme}/{bg_file}')
+        self.draw = ImageDraw.Draw(self.bg)
+        
+        # BG Image
+        for i, field in enumerate(section_template['fields']):
+            ipos = lt_pos[i]
+            self.sections.append(TextSection(ipos['width'], ipos['height'],
+                                             ipos['x'], ipos['y'], 
+                                             slide.get_data(field), 
+                                             ipos['size'], ipos['force_upper'], 
+                                             ipos['spacing'], ipos['font'],
+                                             ipos['color'], ipos['align'],
+                                             ipos['anchor']))
+    
+    def save(self, file_path: str, n: int, outlines: bool = False):        
+        for section in self.sections:
+            section.draw(self.bg, self.draw, n)
+            
+            if outlines:
+                section.draw_outline(self.draw)
+            
+        self.bg.save(file_path, quality=IMG_QUALITY)
 
 
 ################
@@ -219,7 +263,7 @@ class ImageSection(Section):
 ################
 
 class Slide:
-    def __init__(self, width: int, height: int, bg: str | Image.Image,
+    def __init__(self, width: int, height: int, theme: str,
                  title: str, *args, **kwargs) -> None:
         """Base Slide Class
 
@@ -232,11 +276,13 @@ class Slide:
         self.height = height
         self.title  = title
         self.sections: list[Section] = []
+        self.lower_thirds = None
+        self.theme = theme
         
-        if isinstance(bg, Image.Image):
-            self.bg = Image
-        elif isinstance(bg, str):
-            self.bg = Image.open(f'{BG_DIR}/{bg}')
+        # if isinstance(bg, Image.Image):
+        #     self.bg = Image
+        if isinstance(theme, str):
+            self.bg = Image.open(f'{THEME_DIR}/{theme}/{BG_FILE}')
             self.bg = self.bg.resize((width, height), resample=Image.LANCZOS)
         else:
             raise ValueError("bg not a valid type")
@@ -271,7 +317,13 @@ class Slide:
             
         self.bg.save(file_path, quality=IMG_QUALITY)
         
-    def read_template(self, template: str, data: pd.Series, 
+        if self.lower_thirds != None:
+            a = file_path.split('.')
+            a[-2] += '_lt'
+            file_path = '.'.join(a)
+            self.lower_thirds.save(f'{file_path}', n, outlines)
+        
+    def read_template(self, template: str, setup: dict, data: pd.Series, 
                       field_suffix: str = ''):
 
         self.data = data
@@ -283,11 +335,15 @@ class Slide:
         y_offset = 0
         
         for section in templates[template]:
-            width = self.width * section['width']
-            height = self.height * section['height']
-            x_offset = (self.width - width) / 2
+            if section['type'] == 'lt':
+                self.lower_thirds = LowerThirds(self, section, setup['lt_pos'])
             
-            Section.add_from_template(self, int(x_offset), int(y_offset),
-                                      int(width), int(height), section)
-            
-            y_offset += height
+            else:
+                width = self.width * section['width']
+                height = self.height * section['height']
+                x_offset = (self.width - width) / 2
+                
+                Section.add_from_template(self, int(x_offset), int(y_offset),
+                                        int(width), int(height), section)
+                
+                y_offset += height

@@ -12,18 +12,18 @@
 
 
 # Imports
-from tqdm import tqdm
 import pandas as pd
-from json import load
 import os
 import argparse
 import logging
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
+from json import load
 from shutil import rmtree
+from tqdm import tqdm
 
 # Local Imports
 from constants import *
-import slide_creation
+import sermon
 
 # Other Constants
 TITLE_SLIDE = True
@@ -63,6 +63,8 @@ def main():
         
         if not args.multi:
             break
+        if args.multi and isinstance(args.index, int):
+            input('Press Enter to Remake')
     
     if not isinstance(args.index, int):
         input('Press Enter to Exit!')
@@ -108,29 +110,29 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
     slides = []
     sermon_title = data[setup['meta_fields']['title']]
     for i, slide_type in enumerate(slide_types):
-        new_slide = slide_creation.Slide(setup['width'], 
-                                         setup['height'], 
-                                         setup['bg'], 
-                                         sermon_title, 
-                                         outline_sections=args.outlines)
-        new_slide.read_template(slide_type, data, f'.{i}' if i != 0 else '')
+        new_slide = sermon.Slide(setup['width'], 
+                                 setup['height'], 
+                                 setup['theme'], 
+                                 sermon_title, 
+                                 outline_sections=args.outlines)
+        new_slide.read_template(slide_type, setup, data, f'.{i}' if i != 0 else '')
         slides.append(new_slide)
     
     return slides
 
 def make_slides(setup: dict, data: pd.DataFrame,
-                slides: list[slide_creation.Slide], title_slide: bool = True):
+                slides: list[sermon.Slide], title_slide: bool = True):
     starting_i = 0
     
     if title_slide:
         logger.log(DEBUG, 'Making Title Slide')
         starting_i += 1
         title = data[setup['meta_fields']['title']]
-        title_slide = slide_creation.Slide(setup['width'], 
+        title_slide = sermon.Slide(setup['width'], 
                                            setup['height'], 
-                                           setup['bg'], 
+                                           setup['theme'], 
                                            title)
-        title_slide.read_template(TITLE_TEMPLATE, data)
+        title_slide.read_template(TITLE_TEMPLATE, setup, data)
         title_slide.save(f'{SLIDE_DIR}/{0}.png', starting_i, outlines=args.outlines)
     
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
@@ -152,8 +154,10 @@ def cleanup_slides():
 # Gets setup json dict. Returns 
 def get_setup() -> dict:
     with open(SETUP_DATA, 'r') as f:
-        data = load(f)
-    return data
+        setup = load(f)
+    with open(f'{THEME_DIR}/{setup["theme"]}/{LT_POS_FILE}') as f:
+        setup['lt_pos'] = load(f)
+    return setup
 
 # Gets the form data as a Pandas DataFrame
 def get_form_data(form: str) -> pd.DataFrame:
