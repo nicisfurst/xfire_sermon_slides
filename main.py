@@ -19,22 +19,21 @@ import os
 import argparse
 import logging
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
+from shutil import rmtree
 
 # Local Imports
 from constants import *
 import slide_creation
 
 # Other Constants
-DEBUG = True
-DEBUG_I = False
 TITLE_SLIDE = True
 TITLE_TEMPLATE = 'Title'
 
 # Initialise Logging
-logging.basicConfig(level=logging.WARNING, 
+logging.basicConfig(level=INFO, 
                     format=LOGGING_FORMATTER, 
-                    filename=f'logs', 
-                    filemode='a')
+                    filename='logs', 
+                    filemode='w')
 logger = logging.getLogger(__name__)
 
 
@@ -50,19 +49,23 @@ def main():
     
     # Main Loop
     while True:
+        cleanup_slides()
         sermon_data = get_sermon_data(df, setup['meta_fields'])
         if sermon_data is None:
             logger.log(DEBUG, 'sermon_data is None, breaking main loop')
             break
         
+        add_slide_tmp()
         slides = get_slides(setup, sermon_data)
         make_slides(setup, sermon_data, slides, title_slide=TITLE_SLIDE)
+        remove_slide_tmp()
         print('Done!')
         
-        if isinstance(args.index, int) or not args.multi:
+        if not args.multi:
             break
-        
-    input('Press Enter to Exit!')
+    
+    if not isinstance(args.index, int):
+        input('Press Enter to Exit!')
 
 
 # Gets the pandas series with the data for a given sermon
@@ -109,7 +112,7 @@ def get_slides(setup: dict, data: pd.DataFrame) -> list:
                                          setup['height'], 
                                          setup['bg'], 
                                          sermon_title, 
-                                         outline_sections=DEBUG)
+                                         outline_sections=args.outlines)
         new_slide.read_template(slide_type, data, f'.{i}' if i != 0 else '')
         slides.append(new_slide)
     
@@ -120,6 +123,7 @@ def make_slides(setup: dict, data: pd.DataFrame,
     starting_i = 0
     
     if title_slide:
+        logger.log(DEBUG, 'Making Title Slide')
         starting_i += 1
         title = data[setup['meta_fields']['title']]
         title_slide = slide_creation.Slide(setup['width'], 
@@ -127,16 +131,17 @@ def make_slides(setup: dict, data: pd.DataFrame,
                                            setup['bg'], 
                                            title)
         title_slide.read_template(TITLE_TEMPLATE, data)
-        title_slide.save(f'{SLIDE_DIR}/{0}.png', outlines=args.outlines)
+        title_slide.save(f'{SLIDE_DIR}/{0}.png', starting_i, outlines=args.outlines)
     
     for i, slide in tqdm(enumerate(slides), total=len(slides)):
         i = i + starting_i
-        slide.save(f'{SLIDE_DIR}/{i}.png', outlines=args.outlines)
+        logger.log(DEBUG, f'Making Slide {i=} {type(slide)=}')
+        slide.save(f'{SLIDE_DIR}/{i}.png', i, outlines=args.outlines)
 
 
-###################
-# Setup Functions #
-###################
+####################
+# Helper Functions #
+####################
 
 # Removes the existing slides in the slides directory
 def cleanup_slides():
@@ -155,6 +160,22 @@ def get_form_data(form: str) -> pd.DataFrame:
     df = pd.read_csv(form)
     return df.reindex(index=df.index[::-1]).reset_index()
 
+# Adds tmp folder
+def add_slide_tmp():
+    if TMP_DIR in os.listdir():
+        logger.log(INFO, 'TMP_DIR already exists, skip mkdir.')
+        return 
+    logger.log(DEBUG, 'Creating TMP dir.')
+    os.mkdir(TMP_DIR)
+
+# Removes tmp folder
+def remove_slide_tmp():
+    if TMP_DIR not in os.listdir():
+        logger.log(INFO, 'TMP dir doesn\'t exist when trying to remove it.')
+        return
+    logger.log(DEBUG, 'Removing TMP dir.')
+    rmtree(TMP_DIR)
+
 
 ####################
 # Start Of Program #
@@ -168,7 +189,8 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--outlines', action='store_true',
                         help='Adds rectangle outlines around your slide\'s sections.')
     parser.add_argument('-m', '--multi', action='store_true',
-                        help='Allows you to run the program multiple time without exiting.')    
+                        help='Allows you to run the program multiple time without exiting.')
+    global args    
     args = parser.parse_args()
     
     # Set up the program and make sure everything is ready
